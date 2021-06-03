@@ -78,14 +78,37 @@ app.put('/api/users', utilitiesService.fetchBodyMW, async(req, res, next) => {
   }
 });
 
+
+/**
+ * @swagger
+ *  /api/projects:
+ *    put:
+ *      create a new project
+        Interface {
+          name: string;
+          nameSpace: string; // MUST START with `bf-`
+          baseUrl: string; // the url under which the rasa bot instance is reachable
+        }
+ *     
+*/
 app.put('/api/projects', utilitiesService.fetchBodyMW, (req, res, next) => {
   if (req.headers.authorization !== restApiToken) {
     res.sendStatus(403);
     return;
   }
 
+  const inputs = JSON.parse(req.body);
+  
+  if (inputs.name == null || typeof inputs.name !== 'string'
+    || inputs.nameSpace == null || typeof inputs.nameSpace !== 'string'
+    || inputs.baseUrl == null || typeof inputs.baseUrl !== 'string'
+  ) {
+    res.status(400).send('Malformed or missing inputs');
+    return;
+  }
+
   try {
-    projectsService.createProject();
+    projectsService.createProject(inputs.name, inputs.nameSpace, inputs.baseUrl);
     res.sendStatus(200);
   } catch (error) {
     console.log({error});

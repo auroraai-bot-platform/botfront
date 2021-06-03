@@ -16,13 +16,12 @@ import { getUser } from './utilities.service';
 import { ENVIRONMENT_OPTIONS } from '../../ui/components/constants.json';
 
 
-export async function createProject() {
-  const baseUrl = 'http://example.org';
+export async function createProject(name, nameSpace, baseUrl) {
 
   const item = {
     disabled: false,
-    name: 'test',
-    namespace: 'bf-namespace1',
+    name: name,
+    namespace: nameSpace,
     defaultLanguage: 'en'
   };
 
