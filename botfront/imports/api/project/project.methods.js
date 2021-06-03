@@ -43,6 +43,7 @@ if (Meteor.isServer) {
             check(bypassWithCI, Match.Optional(Boolean));
             let _id;
             try {
+                console.log({item});
                 _id = createProject(item);
                 AnalyticsDashboards.create(defaultDashboard({ _id, ...item }));
                 createEndpoints({ _id, ...item });

@@ -1,7 +1,6 @@
 
 import { Accounts } from 'meteor/accounts-base';
 import { setScopes } from '../../lib/scopes';
-
 import { auditLog } from '../../../server/logger';
 
 export function createUser(user, password) {

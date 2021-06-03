@@ -1,6 +1,8 @@
 import { WebApp } from 'meteor/webapp'; 
 import express from 'express';
-import restService from './rest.service';
+import utilitiesService from './utilities.service';
+import usersService from './users.service';
+import projectsService from './projects.service';
 
 const app = express();
 const restApiToken = process.env.REST_API_TOKEN;
@@ -43,7 +45,7 @@ app.get('/api', (req, res, next) => {
         }
  *     
 */
-app.put('/api/users', restService.fetchBodyMW, async(req, res, next) => {
+app.put('/api/users', utilitiesService.fetchBodyMW, async(req, res, next) => {
   if (req.headers.authorization !== restApiToken) {
     res.sendStatus(403);
     return;
@@ -68,7 +70,7 @@ app.put('/api/users', restService.fetchBodyMW, async(req, res, next) => {
   };
 
   try {
-    const success = await restService.createUser(user, inputs.password);
+    const success = await usersService.createUser(user, inputs.password);
     res.send(success);
   } catch (error) {
     console.log({error});
@@ -76,5 +78,20 @@ app.put('/api/users', restService.fetchBodyMW, async(req, res, next) => {
   }
 });
 
-WebApp.rawConnectHandlers.use(app);
+app.put('/api/projects', utilitiesService.fetchBodyMW, (req, res, next) => {
+  if (req.headers.authorization !== restApiToken) {
+    res.sendStatus(403);
+    return;
+  }
+
+  try {
+    projectsService.createProject();
+    res.sendStatus(200);
+  } catch (error) {
+    console.log({error});
+    res.send(error);
+  }
+});
+
+WebApp.connectHandlers.use(app);
 

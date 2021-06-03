@@ -27,7 +27,7 @@ Projects.deny({
     },
 });
 
-const getDefaultDefaultDomain = () => {
+export const getDefaultDefaultDomain = () => {
     const fields = {
         'settings.private.defaultDefaultDomain': 1,
     };
