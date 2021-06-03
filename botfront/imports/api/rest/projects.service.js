@@ -3,22 +3,22 @@ import { auditLog } from '../../../server/logger';
 import { getDefaultDefaultDomain, Projects } from '../project/project.collection';
 
 import { createEndpoints } from '../endpoints/endpoints.methods';
-import { createCredentials } from '../credentials';
+import { Credentials } from '../credentials';
 import { createPolicies } from '../core_policies';
-import {
-    createDefaultStoryGroup,
-    createFailingTestsGroup,
-    StoryGroups
-} from '../storyGroups/storyGroups.methods';
+import { StoryGroups } from '../storyGroups/storyGroups.methods';
 
-import { createInstance } from '../instances/instances.methods';
+import { Instances } from '../instances/instances.collection';
 
 import AnalyticsDashboards from '../graphql/analyticsDashboards/analyticsDashboards.model';
 import { defaultDashboard } from '../graphql/analyticsDashboards/generateDefaults';
 import { getUser } from './utilities.service';
 
+import { ENVIRONMENT_OPTIONS } from '../../ui/components/constants.json';
+
 
 export async function createProject() {
+  const baseUrl = 'http://example.org';
+
   const item = {
     disabled: false,
     name: 'test',
@@ -32,8 +32,9 @@ export async function createProject() {
       console.log({_id});
       AnalyticsDashboards.create(defaultDashboard({ _id, ...item }));
       createEndpoints({ _id, ...item });
-      createCredentials({ _id, ...item });
+      createCredentials(_id, baseUrl);
       createPolicies({ _id, ...item });
+      await createNLUInstance({ _id, ...item }, baseUrl);
       auditLog('Created project', {
           user: getUser(),
           resId: _id,
@@ -62,6 +63,20 @@ function insertProject(item) {
   });
 
   return projectId;
+}
+
+function createCredentials(projectId, baseUrl) {
+  const credentials = `rasa_addons.core.channels.webchat.WebchatInput:
+  session_persistence: true
+  base_url: '${baseUrl}'
+  socket_path: /socket.io/
+  rasa_addons.core.channels.bot_regression_test.BotRegressionTestInput: {}`;
+
+  ENVIRONMENT_OPTIONS.forEach(environment => Credentials.insert({
+    projectId,
+    environment,
+    credentials: credentials,
+  }));
 }
 
 function createStoriesWithTriggersGroup(projectId) {
@@ -113,4 +128,12 @@ function createStoryGroup(projectId, storyGroup) {
   } catch (error) {
       console.log({error});
   }
+}
+
+function createNLUInstance(project, host) {
+  return Instances.insert({
+    name: 'Default Instance',
+    host: host.replace(/{PROJECT_NAMESPACE}/g, project.namespace),
+    projectId: project._id,
+  });
 }
