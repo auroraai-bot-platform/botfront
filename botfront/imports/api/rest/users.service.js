@@ -34,17 +34,3 @@ export function createUser(user, password) {
     }
   });
 }
-
-
-export function fetchBodyMW(req, res, next) {
-  let body = "";
-
-  req.on('data', Meteor.bindEnvironment(function (data) {
-    body += data;
-  }));
-
-  req.on('end', Meteor.bindEnvironment(function () {
-    req.body = body;
-    next();
-  }));
-}
